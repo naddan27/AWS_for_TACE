@@ -18,21 +18,24 @@ params_dict['data_dir_test'] = params_dict['scratch_dir'] + 'Test/'
 params_dict['data_dirs_predict'] = [params_dict["scratch_dir"]]
 #input/output and model file names
 params_dict['input_image_names'] = [
-    'early_minus_t1_before_norm_NORM-for_tumor_pred.nii.gz',
-    'early_minus_delayed_before_norm_NORM-for_tumor_pred.nii.gz'
+    'early_T1C_RAI_RESAMPLED_REG_croppedTo2222_N4_nls_NORM-for_tumor_pred.nii.gz',
+    'delayed_T1C_RAI_RESAMPLED_REG_croppedTo2222_N4_nls_NORM-for_tumor_pred.nii.gz'
         ]                                                                          #list of input volumes names
 params_dict['ground_truth_label_names'] = ['tumor_label_RAI_RESAMPLED_croppedTo2222_nls_BINARY-label.nii.gz']    #list of ground truth volumes names
 params_dict['input_segmentation_masks'] = False                                                             #if input list includes segmentation mask (as is done in cascaded networks), pass in list to show which elements are masks (i.e. if input is MRI and mask, then this variable is [False, True])
-params_dict['model_outputs_dir'] = '/home/neural_network_code/Model/model_outputs/'                            #directory where all outputs of the model will be saved (i.e. saved model weights, optimizer, text file, etc.)
+params_dict['model_outputs_dir'] = '/models_and_predictions/' + params_dict["job_id"]                            #directory where all outputs of the model will be saved (i.e. saved model weights, optimizer, text file, etc.)
 params_dict['model_weights_save_path'] = params_dict['model_outputs_dir'] + 'tf_ckpts'                      #model weights name used when saving/loading a model to/from memory
 params_dict['max_number_checkpoints_keep'] = 2                                                              #number of most recent models to save in tensorflow checkpoint format (models saved based off of validation monitor value)
 params_dict['model_config_save_path'] = params_dict['model_outputs_dir'] + 'config.pkl'                     #model config so that can perfectly re-create network
-params_dict['predicted_label_name'] = ['tumor_pred_label_sub_before_norm.nii.gz', 'tumor-prob-mask_sub_before_norm.nii.gz']                     #binarized predicted output save name and probability mask save name
-params_dict['output_file'] = params_dict['model_outputs_dir'] + params_dict['job_id'] + '.txt'              #name of text file containing epoch loss/metrics
-params_dict['tensorboard_dir'] = params_dict['model_outputs_dir'] + params_dict['job_id']                   #name of logs directory for tensorboard
+params_dict['predicted_label_name'] = ['tumor_pred_label.nii.gz', 'tumor-prob-mask.nii.gz']                     #binarized predicted output save name and probability mask save name
+params_dict['output_file'] = params_dict['model_outputs_dir'] + 'metrics.txt'              #name of text file containing epoch loss/metrics
+params_dict['tensorboard_dir'] = params_dict['model_outputs_dir'] + 'tensorboard_files'                   #name of logs directory for tensorboard
 params_dict['model_image_save_path'] = params_dict['model_outputs_dir'] + 'model_image'                     #name of model image that will be saved out
 #train params
-params_dict['reload_model'] = [False, False]        #whether to reload a previous model, and whether to use previous model state (i.e. optimizer params) when resuming training 
+if os.path.exists(params_dict["model_outputs_dir"]):
+    params_dict['reload_model'] = [True, False]        #whether to reload a previous model, and whether to use previous model state (i.e. optimizer params) when resuming training 
+else:
+    params_dict['reload_model'] = [False, False]
 params_dict['sample_background_prob'] = 0.95        #probability of sampling background class during patching
 params_dict['batch_size'] = [2,2,2]               #batch size during training, validation, and prediction
 params_dict['learning_rate'] = 0.001                  #initial learning rate 
