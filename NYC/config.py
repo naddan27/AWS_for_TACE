@@ -23,7 +23,7 @@ params_dict['input_image_names'] = [
         ]                                                                          #list of input volumes names
 params_dict['ground_truth_label_names'] = ['tumor_label_RAI_RESAMPLED_croppedTo2222_nls_BINARY-label.nii.gz']    #list of ground truth volumes names
 params_dict['input_segmentation_masks'] = False                                                             #if input list includes segmentation mask (as is done in cascaded networks), pass in list to show which elements are masks (i.e. if input is MRI and mask, then this variable is [False, True])
-params_dict['model_outputs_dir'] = '/models_and_predictions/' + params_dict["job_id"]                            #directory where all outputs of the model will be saved (i.e. saved model weights, optimizer, text file, etc.)
+params_dict['model_outputs_dir'] = '/models_and_predictions/' + params_dict["job_id"] + "/"                           #directory where all outputs of the model will be saved (i.e. saved model weights, optimizer, text file, etc.)
 params_dict['model_weights_save_path'] = params_dict['model_outputs_dir'] + 'tf_ckpts'                      #model weights name used when saving/loading a model to/from memory
 params_dict['max_number_checkpoints_keep'] = 2                                                              #number of most recent models to save in tensorflow checkpoint format (models saved based off of validation monitor value)
 params_dict['model_config_save_path'] = params_dict['model_outputs_dir'] + 'config.pkl'                     #model config so that can perfectly re-create network
