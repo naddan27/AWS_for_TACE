@@ -4,7 +4,7 @@ import psutil
 import tensorflow as tf
 from train_cluster import *
 from predict_cluster import *
-
+# tutorial
 trainModel = False   #set to false if you want to predict on the train/val/test set using this config file
 params_dict = {}
 params_dict['random_seed'] = [False, 0]      #whether to use a random seed (for numpy and tensorflow operations), and what the seed number should be
