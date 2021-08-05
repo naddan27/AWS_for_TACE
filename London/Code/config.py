@@ -9,8 +9,8 @@ trainModel = False   #set to false if you want to predict on the train/val/test 
 params_dict = {}
 params_dict['random_seed'] = [False, 0]      #whether to use a random seed (for numpy and tensorflow operations), and what the seed number should be
 #project directory
-params_dict['scratch_dir'] = '/home/Data/TACE/tumor_seg/preop/percentage_in_liver_80_subtraction_after_norm/'
-params_dict["job_id"] =  "earlyT1_earlydelayed_subtract_after_norm"
+params_dict['scratch_dir'] = '/home/Data/TACE/tumor_seg/preop/sub_and_early/'
+params_dict["job_id"] =  "sub_early"
 #train/val/test directories
 params_dict['data_dir_train'] = params_dict['scratch_dir'] + 'Train/'
 params_dict['data_dir_val'] = params_dict['scratch_dir'] + 'Val/'
@@ -18,6 +18,7 @@ params_dict['data_dir_test'] = params_dict['scratch_dir'] + 'Test/'
 params_dict['data_dirs_predict'] = [params_dict["scratch_dir"]]
 #input/output and model file names
 params_dict['input_image_names'] = [
+    'early_T1C_RAI_RESAMPLED_REG_croppedTo2222_N4_nls_NORM-for_tumor_pred.nii.gz',
     'subractionAfterNormEarlyT1_croppedTo2222.nii.gz',
     'subtractionAfterNormEarlyDelayed_croppedTo2222.nii.gz'
         ]                                                                          #list of input volumes names
