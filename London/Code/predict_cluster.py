@@ -42,7 +42,7 @@ def predict_model(params_dict):
 
 #Function to patch test image based on overlap amount and boundary removal
 def predict_volume(model, manager, ckpt, patient_path, model_outputs_dir, params_dict):
-    export_path = os.path.join(model_outputs_dir, "predictions", patient_path.split("/")[-2], patient_path.split("/")[-1])
+    export_path = os.path.join(model_outputs_dir, "predictions", patient_path.split("/")[-3], patient_path.split("/")[-2])
     print(patient_path)
     print(export_path)
     if not os.path.exists(export_path):
