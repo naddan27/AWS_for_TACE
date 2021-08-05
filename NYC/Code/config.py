@@ -91,7 +91,7 @@ params_dict['save_at_cycle_end'] = False                                #whether
 #params for optional exponential learning rate decay schedule
 params_dict['power'] = 0.15                                             #power to reduce rate (closer to 1 makes function more linear; closer to 0 makes function more like a step function)
 #predict params 
-params_dict['predict_using_patches'] = False                                            #whether to predict patchwise or pass entire volume into convolutional net and predict in a single pass
+params_dict['predict_using_patches'] = True                                            #whether to predict patchwise or pass entire volume into convolutional net and predict in a single pass
 params_dict['patch_overlap'] = 0.75                                                     #percentage of overlap with neighboring patches (i.e. .75 means 75% overlap)
 params_dict['percentage_empty_to_skip_patch'] = [0.5, True]                             #patches at the borders of the image will be mostly empty and are not worth predicting on. This parameter skips patches if they are below the threshold selected (i.e. 0.5 means that patches that are 50% empty will be skipped); whether you want to predict a patch if the center of the patch contains data (regardless of what percentage of the patch is actually empty)
 params_dict['boundary_removal'] = 3                                                     #number of voxels to remove around the edge of the predicted patch to combat edge effects
