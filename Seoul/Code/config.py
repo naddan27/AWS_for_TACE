@@ -18,7 +18,7 @@ params_dict['data_dir_test'] = params_dict['scratch_dir'] + 'Test/'
 params_dict['data_dirs_predict'] = [params_dict["scratch_dir"]]
 #input/output and model file names
 params_dict['input_image_names'] = [
-    'subtractionBeforeNormEarlyT1_croppedTo2222.nii.gz'
+    'subtractionBeforeNormEarlyT1_croppedTo2222.nii.gz',
     'subtractionBeforeNormEarlyDelayed_croppedTo2222.nii.gz'
         ]                                                                          #list of input volumes names
 params_dict['ground_truth_label_names'] = ['tumor_label_RAI_RESAMPLED_croppedTo2222_nls_BINARY-label.nii.gz']    #list of ground truth volumes names
