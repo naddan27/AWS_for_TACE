@@ -43,6 +43,8 @@ def predict_model(params_dict):
 #Function to patch test image based on overlap amount and boundary removal
 def predict_volume(model, manager, ckpt, patient_path, model_outputs_dir, params_dict):
     export_path = os.path.join(model_outputs_dir, "predictions", patient_path.split("/")[-2], patient_path.split("/")[-1])
+    print(patient_path)
+    print(export_path)
     if not os.path.exists(export_path):
         os.makedirs(export_path)
 
@@ -76,15 +78,15 @@ def predict_volume(model, manager, ckpt, patient_path, model_outputs_dir, params
             uncertainty_map_final = uncertainty_map_final[remove_padding_initial_index]
             uncertainty_map_final = np.pad(uncertainty_map_final, pad_bounds, mode='constant')
             uncertainty_map_nib = nib.Nifti1Image(uncertainty_map_final[...,0], affine, header=header)
-            nib.save(uncertainty_map_nib, export_path + save_uncertainty_map[1])
+            nib.save(uncertainty_map_nib, os.path.join(export_path, save_uncertainty_map[1]))
         #save probability mask of each output channel
         for output_channel_predicted_vol in range(0, num_outputs):
             predicted_vol_nib = nib.Nifti1Image(predicted_vol_final[...,output_channel_predicted_vol], affine, header=header)
             if num_outputs == 1:
                 #if only one output channel given, use default name
-                nib.save(predicted_vol_nib, export_path + predicted_label_name[1])
+                nib.save(predicted_vol_nib, os.path.join(export_path, predicted_label_name[1]))
             else:
-                nib.save(predicted_vol_nib, export_path + predicted_label_name[1][:-7] + '_' + str(output_channel_predicted_vol) + '.nii.gz')
+                nib.save(predicted_vol_nib, os.path.join(export_path, predicted_label_name[1][:-7] + '_' + str(output_channel_predicted_vol) + '.nii.gz'))
         #binarize predicted label map at requested thresholds (if only one output channel, otherwise argmax softmax)
         if num_outputs == 1:
             for threshold in binarize_value:
@@ -93,13 +95,13 @@ def predict_volume(model, manager, ckpt, patient_path, model_outputs_dir, params
                 predicted_vol_nib = nib.Nifti1Image(predicted_vol_final_binarized, affine, header=header)
                 if len(binarize_value) == 1:
                     #if only one threshold given, use default name
-                    nib.save(predicted_vol_nib, export_path + predicted_label_name[0])
+                    nib.save(predicted_vol_nib, os.path.join(export_path, predicted_label_name[0]))
                 else:
-                    nib.save(predicted_vol_nib, export_path + 'threshold_' + str(threshold) + '_' + predicted_label_name[0])
+                    nib.save(predicted_vol_nib, os.path.join(export_path, 'threshold_' + str(threshold) + '_' + predicted_label_name[0]))
         else:
             predicted_vol_final_binarized = np.argmax(predicted_vol_final, axis=-1)
             predicted_vol_nib = nib.Nifti1Image(predicted_vol_final_binarized, affine, header=header)
-            nib.save(predicted_vol_nib, export_path + predicted_label_name[0])
+            nib.save(predicted_vol_nib, os.path.join(export_path, predicted_label_name[0]))
     else:
         final_probability = predict_classification(model, manager, ckpt, all_input_vols, params_dict)
         #save probability and binarized value in text files
