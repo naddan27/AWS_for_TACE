@@ -6,6 +6,7 @@
 #TODO: Add model snaphot prediction to patchwise inference
 
 import time
+import os 
 import numpy as np
 import nibabel as nib
 import tensorflow as tf
@@ -21,7 +22,7 @@ from scipy.ndimage.interpolation import map_coordinates
 
 def predict_model(params_dict):
     #unpack relevant dictionary elements
-    output_file, data_dirs_predict, input_image_names = unpack_keys(params_dict)
+    output_file, data_dirs_predict, input_image_names, model_outputs_dir = unpack_keys(params_dict)
     #load model
     model, manager, ckpt = load_my_model(params_dict)
     #list patients to test
@@ -34,13 +35,17 @@ def predict_model(params_dict):
     num_patients = len(patients)
     for counter, patient_path in enumerate(tqdm(patients)):
         start_prediction_time = time.time()
-        predict_volume(model, manager, ckpt, patient_path, params_dict)
+        predict_volume(model, manager, ckpt, patient_path, model_outputs_dir, params_dict)
         time_for_prediction = int(time.time() - start_prediction_time)
         with open(output_file, 'a') as f:
             f.write(str(counter+1) + '/' + str(num_patients) + ': Prediction for patient ' + patient_path + ' is complete (' + str(time_for_prediction) + 's) \n')
 
 #Function to patch test image based on overlap amount and boundary removal
-def predict_volume(model, manager, ckpt, patient_path, params_dict):
+def predict_volume(model, manager, ckpt, patient_path, model_outputs_dir, params_dict):
+    export_path = os.path.join(model_outputs_dir, patient_path.split("/")[-2], patient_path.split("/")[-1])
+    if not os.path.exists(export_path):
+        os.makedirs(export_path)
+
     #unpack relevant dictionary elements
     input_image_names, network_name, predict_using_patches, predicted_label_name, patch_size, save_uncertainty_map, num_outputs, binarize_value = unpack_keys(params_dict)
     #load in patient volume
@@ -71,15 +76,15 @@ def predict_volume(model, manager, ckpt, patient_path, params_dict):
             uncertainty_map_final = uncertainty_map_final[remove_padding_initial_index]
             uncertainty_map_final = np.pad(uncertainty_map_final, pad_bounds, mode='constant')
             uncertainty_map_nib = nib.Nifti1Image(uncertainty_map_final[...,0], affine, header=header)
-            nib.save(uncertainty_map_nib, patient_path + save_uncertainty_map[1])
+            nib.save(uncertainty_map_nib, export_path + save_uncertainty_map[1])
         #save probability mask of each output channel
         for output_channel_predicted_vol in range(0, num_outputs):
             predicted_vol_nib = nib.Nifti1Image(predicted_vol_final[...,output_channel_predicted_vol], affine, header=header)
             if num_outputs == 1:
                 #if only one output channel given, use default name
-                nib.save(predicted_vol_nib, patient_path + predicted_label_name[1])
+                nib.save(predicted_vol_nib, export_path + predicted_label_name[1])
             else:
-                nib.save(predicted_vol_nib, patient_path + predicted_label_name[1][:-7] + '_' + str(output_channel_predicted_vol) + '.nii.gz')
+                nib.save(predicted_vol_nib, export_path + predicted_label_name[1][:-7] + '_' + str(output_channel_predicted_vol) + '.nii.gz')
         #binarize predicted label map at requested thresholds (if only one output channel, otherwise argmax softmax)
         if num_outputs == 1:
             for threshold in binarize_value:
@@ -88,13 +93,13 @@ def predict_volume(model, manager, ckpt, patient_path, params_dict):
                 predicted_vol_nib = nib.Nifti1Image(predicted_vol_final_binarized, affine, header=header)
                 if len(binarize_value) == 1:
                     #if only one threshold given, use default name
-                    nib.save(predicted_vol_nib, patient_path + predicted_label_name[0])
+                    nib.save(predicted_vol_nib, export_path + predicted_label_name[0])
                 else:
-                    nib.save(predicted_vol_nib, patient_path + 'threshold_' + str(threshold) + '_' + predicted_label_name[0])
+                    nib.save(predicted_vol_nib, export_path + 'threshold_' + str(threshold) + '_' + predicted_label_name[0])
         else:
             predicted_vol_final_binarized = np.argmax(predicted_vol_final, axis=-1)
             predicted_vol_nib = nib.Nifti1Image(predicted_vol_final_binarized, affine, header=header)
-            nib.save(predicted_vol_nib, patient_path + predicted_label_name[0])
+            nib.save(predicted_vol_nib, export_path + predicted_label_name[0])
     else:
         final_probability = predict_classification(model, manager, ckpt, all_input_vols, params_dict)
         #save probability and binarized value in text files

@@ -2,15 +2,6 @@ import os
 import numpy as np
 import psutil
 import tensorflow as tf
-#set the GPU memory utilization
-os.environ["CUDA_VISIBLE_DEVICES"]="0"
-gpus = tf.config.list_physical_devices('GPU')
-gpu_memory_limit = 29 #in GB
-for gpu in gpus:
-    tf.config.experimental.set_virtual_device_configuration(gpu,
-        [tf.config.experimental.VirtualDeviceConfiguration(memory_limit = 1024 * gpu_memory_limit)
-            ])
-
 from train_cluster import *
 from predict_cluster import *
 
@@ -18,8 +9,8 @@ trainModel = True   #set to false if you want to predict on the train/val/test s
 params_dict = {}
 params_dict['random_seed'] = [False, 0]      #whether to use a random seed (for numpy and tensorflow operations), and what the seed number should be
 #project directory
-params_dict['scratch_dir'] = '/home/neural_network_code/' + 'Data/Patients/'
-params_dict["job_id"] =  "tumor_prediction_model"
+params_dict['scratch_dir'] = '/home/Data/TACE/tumor_seg/preop/percentage_in_liver_80_subtraction_after_norm/'
+params_dict["job_id"] =  "earlyT1_earlydelayed_subtract_after_norm"
 #train/val/test directories
 params_dict['data_dir_train'] = params_dict['scratch_dir'] + 'Train/'
 params_dict['data_dir_val'] = params_dict['scratch_dir'] + 'Val/'
@@ -27,21 +18,24 @@ params_dict['data_dir_test'] = params_dict['scratch_dir'] + 'Test/'
 params_dict['data_dirs_predict'] = [params_dict["scratch_dir"]]
 #input/output and model file names
 params_dict['input_image_names'] = [
-    'early_minus_t1_before_norm_NORM-for_tumor_pred.nii.gz',
-    'early_minus_delayed_before_norm_NORM-for_tumor_pred.nii.gz'
+    'subractionAfterNormEarlyT1_croppedTo2222.nii.gz',
+    'subtractionAfterNormEarlyDelayed_croppedTo2222.nii.gz'
         ]                                                                          #list of input volumes names
 params_dict['ground_truth_label_names'] = ['tumor_label_RAI_RESAMPLED_croppedTo2222_nls_BINARY-label.nii.gz']    #list of ground truth volumes names
 params_dict['input_segmentation_masks'] = False                                                             #if input list includes segmentation mask (as is done in cascaded networks), pass in list to show which elements are masks (i.e. if input is MRI and mask, then this variable is [False, True])
-params_dict['model_outputs_dir'] = '/home/neural_network_code/Model/model_outputs/'                            #directory where all outputs of the model will be saved (i.e. saved model weights, optimizer, text file, etc.)
+params_dict['model_outputs_dir'] = '/home/Model/' + params_dict["job_id"] + "/"                           #directory where all outputs of the model will be saved (i.e. saved model weights, optimizer, text file, etc.)
 params_dict['model_weights_save_path'] = params_dict['model_outputs_dir'] + 'tf_ckpts'                      #model weights name used when saving/loading a model to/from memory
 params_dict['max_number_checkpoints_keep'] = 2                                                              #number of most recent models to save in tensorflow checkpoint format (models saved based off of validation monitor value)
 params_dict['model_config_save_path'] = params_dict['model_outputs_dir'] + 'config.pkl'                     #model config so that can perfectly re-create network
-params_dict['predicted_label_name'] = ['tumor_pred_label_sub_before_norm.nii.gz', 'tumor-prob-mask_sub_before_norm.nii.gz']                     #binarized predicted output save name and probability mask save name
-params_dict['output_file'] = params_dict['model_outputs_dir'] + params_dict['job_id'] + '.txt'              #name of text file containing epoch loss/metrics
-params_dict['tensorboard_dir'] = params_dict['model_outputs_dir'] + params_dict['job_id']                   #name of logs directory for tensorboard
+params_dict['predicted_label_name'] = ['tumor_pred_label.nii.gz', 'tumor-prob-mask.nii.gz']                     #binarized predicted output save name and probability mask save name
+params_dict['output_file'] = params_dict['model_outputs_dir'] + 'metrics.txt'              #name of text file containing epoch loss/metrics
+params_dict['tensorboard_dir'] = params_dict['model_outputs_dir'] + 'tensorboard_files'                   #name of logs directory for tensorboard
 params_dict['model_image_save_path'] = params_dict['model_outputs_dir'] + 'model_image'                     #name of model image that will be saved out
 #train params
-params_dict['reload_model'] = [False, False]        #whether to reload a previous model, and whether to use previous model state (i.e. optimizer params) when resuming training 
+if os.path.exists(params_dict["model_outputs_dir"]):
+    params_dict['reload_model'] = [True, False]        #whether to reload a previous model, and whether to use previous model state (i.e. optimizer params) when resuming training 
+else:
+    params_dict['reload_model'] = [False, False]
 params_dict['sample_background_prob'] = 0.95        #probability of sampling background class during patching
 params_dict['batch_size'] = [2,2,2]               #batch size during training, validation, and prediction
 params_dict['learning_rate'] = 0.001                  #initial learning rate 
@@ -97,7 +91,7 @@ params_dict['save_at_cycle_end'] = False                                #whether
 #params for optional exponential learning rate decay schedule
 params_dict['power'] = 0.15                                             #power to reduce rate (closer to 1 makes function more linear; closer to 0 makes function more like a step function)
 #predict params 
-params_dict['predict_using_patches'] = False                                            #whether to predict patchwise or pass entire volume into convolutional net and predict in a single pass
+params_dict['predict_using_patches'] = True                                            #whether to predict patchwise or pass entire volume into convolutional net and predict in a single pass
 params_dict['patch_overlap'] = 0.75                                                     #percentage of overlap with neighboring patches (i.e. .75 means 75% overlap)
 params_dict['percentage_empty_to_skip_patch'] = [0.5, True]                             #patches at the borders of the image will be mostly empty and are not worth predicting on. This parameter skips patches if they are below the threshold selected (i.e. 0.5 means that patches that are 50% empty will be skipped); whether you want to predict a patch if the center of the patch contains data (regardless of what percentage of the patch is actually empty)
 params_dict['boundary_removal'] = 3                                                     #number of voxels to remove around the edge of the predicted patch to combat edge effects
