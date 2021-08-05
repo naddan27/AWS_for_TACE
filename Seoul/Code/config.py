@@ -10,7 +10,7 @@ params_dict = {}
 params_dict['random_seed'] = [False, 0]      #whether to use a random seed (for numpy and tensorflow operations), and what the seed number should be
 #project directory
 params_dict['scratch_dir'] = '/home/Data/TACE/tumor_seg/preop/percentage_in_liver_80_subtraction_before_norm/'
-params_dict["job_id"] =  "earlyT1_earlydelayed_subtract_before_norm"
+params_dict["job_id"] =  "earlyT1_earlydelayed_subtract_before_norm1"
 #train/val/test directories
 params_dict['data_dir_train'] = params_dict['scratch_dir'] + 'Train/'
 params_dict['data_dir_val'] = params_dict['scratch_dir'] + 'Val/'
